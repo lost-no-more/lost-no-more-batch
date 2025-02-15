@@ -61,5 +61,12 @@ jobs:
           username: ${{ secrets.DEV_EC2_USER }}
           key: ${{ secrets.DEV_EC2_KEY }}
           script: |
-            cd ~
-            ./deploy.sh
+            export DOCKER_LOGIN_USERNAME=${{ secrets.DOCKER_LOGIN_USERNAME }}
+            export DEV_REPONAME=${{ secrets.DEV_REPONAME }}
+            cd /home/ubuntu/compose
+            sudo docker compose down
+            sudo touch docker-compose.yaml
+            sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_LOGIN_ACCESSTOKEN }}
+            sudo docker pull ${{ secrets.DOCKER_LOGIN_USERNAME }}/${{ secrets.DEV_REPONAME }}:latest
+            sudo docker compose -f docker-compose.dev.yml up -d
+            sudo docker image prune -f
