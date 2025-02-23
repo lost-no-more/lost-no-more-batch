@@ -16,6 +16,17 @@ spring:
         format_sql: true
         show_sql: true
 
+  batch:
+    jdbc:
+      initialize-schema: always
+    job:
+      enabled: false
+      names: openApiJob
+
+  h2:
+    console:
+      enabled: true
+
 open-api:
   url: test
   secret-key: test
