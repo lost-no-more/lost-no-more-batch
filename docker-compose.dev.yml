@@ -16,7 +16,6 @@ services:
     networks:
       - app-network
 
-  # Elasticsearch
   elasticsearch:
     image: elasticsearch:8.17.1
     container_name: elasticsearch
