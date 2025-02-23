@@ -16,4 +16,8 @@ public class LocationRetriever {
         return locationRepository.findByName(name)
                 .orElse(null);
     }
+
+    public boolean existsByName(final String name) {
+        return locationRepository.existsByName(name);
+    }
 }
