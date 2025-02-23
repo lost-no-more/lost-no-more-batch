@@ -1,30 +1,27 @@
 package lost_no_more.lost_no_more_batch.global.config;
 
 import javax.sql.DataSource;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.datasource.init.DataSourceInitializer;
-import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 @Configuration
 @Profile("test")
 public class BatchTestConfig {
 
-    private final DataSource metaDataSource;
-
-    public BatchTestConfig(DataSource metaDataSource) {
-        this.metaDataSource = metaDataSource;
+    @Bean(name = "metaDataSource")
+    @Primary
+    @ConfigurationProperties(prefix = "spring.datasource-meta")
+    public DataSource metaDataSource() {
+        return DataSourceBuilder.create().build();
     }
 
-    @Bean
-    public DataSourceInitializer metaDataSourceInitializer() {
-        DataSourceInitializer dataSourceInitializer = new DataSourceInitializer();
-        dataSourceInitializer.setDataSource(metaDataSource);
-        ResourceDatabasePopulator databasePopulator = new ResourceDatabasePopulator();
-        databasePopulator.addScript(new ClassPathResource("sql/batch-mysql.sql"));
-        dataSourceInitializer.setDatabasePopulator(databasePopulator);
-        return dataSourceInitializer;
+    @Bean(name = "dataDataSource")
+    @ConfigurationProperties(prefix = "spring.datasource-data")
+    public DataSource dataDataSource() {
+        return DataSourceBuilder.create().build();
     }
 }
