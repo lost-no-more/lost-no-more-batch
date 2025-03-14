@@ -16,7 +16,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 @Profile("!test")
 @EnableJpaRepositories(
-        basePackages = "lost_no_more.lost_no_more_batch.item.repository",
+        basePackages = {
+                "lost_no_more.lost_no_more_batch.item.repository",
+                "lost_no_more.lost_no_more_batch.elastic_item.repository"
+        },
         entityManagerFactoryRef = "dataEntityManager",
         transactionManagerRef = "dataTransactionManager"
 )
@@ -36,8 +39,9 @@ public class DataDBConfig {
 
         em.setDataSource(dataDBSource());
         em.setPackagesToScan(new String[]{"lost_no_more.lost_no_more_batch.global.domain"
-                ,"lost_no_more.lost_no_more_batch.item.domain"});
-        em. setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+                , "lost_no_more.lost_no_more_batch.item.domain",
+                "lost_no_more.lost_no_more_batch.elastic_item.domain"});
+        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         HashMap<String, Object> properties = new HashMap<>();
         properties.put("hibernate.hbm2ddl.auto", "update");
