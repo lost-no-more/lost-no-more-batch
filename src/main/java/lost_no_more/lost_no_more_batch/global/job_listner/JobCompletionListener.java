@@ -1,6 +1,10 @@
-package lost_no_more.lost_no_more_batch.open_api.job;
+package lost_no_more.lost_no_more_batch.global.job_listner;
 
+import java.time.Duration;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
@@ -12,9 +16,22 @@ import org.springframework.stereotype.Component;
 public class JobCompletionListener implements JobExecutionListener {
 
     private final JobRepository jobRepository;
+    private static final Logger log = LoggerFactory.getLogger(JobCompletionListener.class);
+    private Instant startTime;
+
+    @Override
+    public void beforeJob(JobExecution jobExecution) {
+        startTime = Instant.now();
+        log.info("Batch Job [{}] started at {}", jobExecution.getJobInstance().getJobName(), startTime);
+    }
 
     @Override
     public void afterJob(JobExecution jobExecution) {
+        Instant endTime = Instant.now();
+        Duration duration = Duration.between(startTime, endTime);
+        log.info("Batch Job [{}] finished at {} | Duration: {} seconds",
+                jobExecution.getJobInstance().getJobName(), endTime, duration.toSeconds());
+
         boolean hasFailedStep = jobExecution.getStepExecutions().stream()
                 .anyMatch(step -> step.getExitStatus().equals(ExitStatus.FAILED));
 
