@@ -55,7 +55,7 @@ jobs:
           script: |
             sudo docker cp ${{ secrets.EC2_JAR_TARGET }} ${{ secrets.JENKINS_JAR_TARGET }}
 
-            cd /home/ubuntu/compose
+            cd /home/ec2-user/compose
             sudo docker compose down
             sudo docker compose -f docker-compose.dev.yml up -d
             sudo docker image prune -f
