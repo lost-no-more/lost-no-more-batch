@@ -1,3 +1,25 @@
 spring:
   profiles:
-    default: test
+    default: local
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+        show_sql: true
+
+  batch:
+    job:
+      fail-on-job-failure: true
+      enabled: true
+    jdbc:
+      initialize-schema: never
+
+logging:
+  level:
+    org.springframework.data.elasticsearch.client: DEBUG
+    org.elasticsearch.client: DEBUG
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
