@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -16,31 +17,33 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 @Profile("!test")
 @EnableJpaRepositories(
-        basePackages = {
-                "lost_no_more.lost_no_more_batch.item.repository",
-                "lost_no_more.lost_no_more_batch.elastic_item.repository"
-        },
-        entityManagerFactoryRef = "dataEntityManager",
-        transactionManagerRef = "dataTransactionManager"
+    basePackages = {
+        "lost_no_more.lost_no_more_batch.item.repository"
+    },
+    entityManagerFactoryRef = "dataEntityManager",
+    transactionManagerRef = "dataTransactionManager"
 )
 public class DataDBConfig {
 
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource-data")
     public DataSource dataDBSource() {
-
         return DataSourceBuilder.create().build();
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean dataEntityManager() {
+    public JdbcTemplate dataJdbcTemplate() {
+        return new JdbcTemplate(dataDBSource());
+    }
 
+    @Bean
+    public LocalContainerEntityManagerFactoryBean dataEntityManager() {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 
         em.setDataSource(dataDBSource());
         em.setPackagesToScan(new String[]{"lost_no_more.lost_no_more_batch.global.domain"
-                , "lost_no_more.lost_no_more_batch.item.domain",
-                "lost_no_more.lost_no_more_batch.elastic_item.domain"});
+            , "lost_no_more.lost_no_more_batch.item.domain",
+            "lost_no_more.lost_no_more_batch.elastic_item.domain"});
         em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
 
         HashMap<String, Object> properties = new HashMap<>();
@@ -53,11 +56,8 @@ public class DataDBConfig {
 
     @Bean
     public PlatformTransactionManager dataTransactionManager() {
-
         JpaTransactionManager transactionManager = new JpaTransactionManager();
-
         transactionManager.setEntityManagerFactory(dataEntityManager().getObject());
-
         return transactionManager;
     }
 }
