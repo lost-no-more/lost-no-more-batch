@@ -12,6 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class LostItemDto {
 
+    private String atcId;
     private String categoryName;
     private String color;
     private String image;
