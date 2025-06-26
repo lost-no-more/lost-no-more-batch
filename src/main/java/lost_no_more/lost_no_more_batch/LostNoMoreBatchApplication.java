@@ -9,7 +9,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 public class LostNoMoreBatchApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LostNoMoreBatchApplication.class, args);
+		System.exit(SpringApplication.exit(
+			SpringApplication.run(LostNoMoreBatchApplication.class, args)
+		));
 	}
 
 }
