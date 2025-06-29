@@ -25,11 +25,6 @@ spring:
         format_sql: true
         show_sql: true
 
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
-      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
-
   batch:
     jdbc:
       initialize-schema: always
@@ -43,6 +38,7 @@ spring:
 kakao:
   map:
     secret-key: test
+    url: test
 
 open-api:
   url: http://test-api.com
