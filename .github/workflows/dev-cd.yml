@@ -20,7 +20,7 @@ jobs:
           distribution: 'corretto'
           java-version: '17'
 
-      - name: Create application-dev.yml
+      - name: Create application.yml
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
