@@ -23,6 +23,7 @@ jobs:
       - name: Create application-dev.yml
         run: |
           mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION }}" | base64 --decode > ./src/main/resources/application.yml
           echo "${{ secrets.APPLICATION_DEV }}" | base64 --decode > ./src/main/resources/application-dev.yml
         shell: bash
 

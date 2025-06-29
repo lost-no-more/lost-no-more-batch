@@ -38,9 +38,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Create application-dev.yml
+      - name: Create application.yml
         run: |
           mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION }}" | base64 --decode > ./src/main/resources/application.yml
           echo "${{ secrets.APPLICATION_DEV }}" | base64 --decode > ./src/main/resources/application-dev.yml
         shell: bash
 
