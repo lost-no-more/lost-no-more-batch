@@ -25,7 +25,7 @@ public class LocationCreator {
 
         try {
             String sql = """
-            INSERT INTO location (name, latitude, longtitude, region, created_date, modified_date) 
+            INSERT INTO location (name, latitude, longitude, region, created_date, modified_date) 
             VALUES (?, ?, ?, ?, NOW(), NOW())
             """;
 

@@ -16,7 +16,7 @@ import lost_no_more.lost_no_more_batch.global.domain.BaseEntity;
 @Getter
 @Table(name = "location",
     indexes = {
-        @Index(name = "idx_location_name", columnList = "location_name", unique = true)
+        @Index(name = "idx_name", columnList = "name", unique = true)
     })
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -27,13 +27,13 @@ public class Location extends BaseEntity {
     @Column(name = "location_id")
     private Long id;
 
-    @Column(name = "location_name", nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "latitude", nullable = false)
     private Double latitude;
 
-    @Column(name = "longtitude", nullable = false)
+    @Column(name = "longitude", nullable = false)
     private Double longitude;
 
     @Column(name = "region", nullable = false)

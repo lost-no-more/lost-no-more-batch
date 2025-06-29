@@ -1,4 +1,4 @@
-package lost_no_more.lost_no_more_batch.elastic_item.service;
+package lost_no_more.lost_no_more_batch.elasticsearch.service;
 
 import co.elastic.clients.elasticsearch._types.GeoBounds;
 import co.elastic.clients.elasticsearch._types.GeoLocation;
@@ -16,7 +16,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import lost_no_more.lost_no_more_batch.elastic_item.domain.LostItemDocument;
+import lost_no_more.lost_no_more_batch.elasticsearch.domain.LostItemDocument;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
