@@ -2,23 +2,37 @@ spring:
   config:
     activate:
       on-profile: test
-  datasource:
+
+  # Multi-DataSource 설정 (테스트용)
+  datasource-meta:
     driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:testdb;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    jdbc-url: jdbc:h2:mem:testdb_meta;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
+
+  datasource-data:
+    driver-class-name: org.h2.Driver
+    jdbc-url: jdbc:h2:mem:testdb_data;MODE=MYSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
         show_sql: true
 
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
+      - org.springframework.boot.autoconfigure.elasticsearch.ElasticsearchRestClientAutoConfiguration
+
   batch:
     jdbc:
-      initialize-schema: always  # ✅ 배치 테이블 자동 생성
+      initialize-schema: always
     job:
       enabled: false
 
@@ -29,3 +43,7 @@ spring:
 kakao:
   map:
     secret-key: test
+
+open-api:
+  url: http://test-api.com
+  secret-key: test-key
