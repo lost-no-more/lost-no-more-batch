@@ -4,20 +4,17 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQuery;
+
 import jakarta.annotation.Nonnull;
+import lombok.Getter;
 import lost_no_more.lost_no_more_batch.global.reader.expression.Expression;
 
+@Getter
 public class QuerydslNoOffsetNumberOptions<T, N extends Number & Comparable<?>> extends QuerydslNoOffsetOptions<T> {
 
     private final NumberPath<N> field;
     private N currentId;
     private N lastId;
-
-    private QuerydslNoOffsetNumberOptions(@Nonnull NumberPath<N> field,
-                                          @Nonnull Expression expression) {
-        super(field, expression);
-        this.field = field;
-    }
 
     private QuerydslNoOffsetNumberOptions(@Nonnull NumberPath<N> field,
                                           @Nonnull Expression expression,
@@ -26,20 +23,8 @@ public class QuerydslNoOffsetNumberOptions<T, N extends Number & Comparable<?>> 
         this.field = field;
     }
 
-    public static <T, N extends Number & Comparable<?>> QuerydslNoOffsetNumberOptions<T, N> of(@Nonnull NumberPath<N> field, @Nonnull Expression expression) {
-        return new QuerydslNoOffsetNumberOptions<>(field, expression);
-    }
-
     public static <T, N extends Number & Comparable<?>> QuerydslNoOffsetNumberOptions<T, N> of(@Nonnull NumberPath<N> field, @Nonnull Expression expression, String idName) {
         return new QuerydslNoOffsetNumberOptions<>(field, expression, idName);
-    }
-
-    public N getCurrentId() {
-        return currentId;
-    }
-
-    public N getLastId() {
-        return lastId;
     }
 
     @Override
