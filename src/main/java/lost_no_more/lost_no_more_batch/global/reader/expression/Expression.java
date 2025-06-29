@@ -29,10 +29,6 @@ public enum Expression {
         return where.expression(id, page, currentId);
     }
 
-    public OrderSpecifier<String> order(StringPath id) {
-        return isAsc() ? id.asc() : id.desc();
-    }
-
     public <N extends Number & Comparable<?>> OrderSpecifier<N> order(NumberPath<N> id) {
         return isAsc() ? id.asc() : id.desc();
     }

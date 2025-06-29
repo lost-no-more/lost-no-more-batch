@@ -1,23 +1,21 @@
 package lost_no_more.lost_no_more_batch.global.reader;
 
+import java.util.function.Function;
+
+import org.springframework.util.ClassUtils;
+import org.springframework.util.CollectionUtils;
+
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
-import java.util.function.Function;
 import lost_no_more.lost_no_more_batch.global.reader.options.QuerydslNoOffsetOptions;
-import org.springframework.util.ClassUtils;
-import org.springframework.util.CollectionUtils;
 
 public class QuerydslNoOffsetPagingItemReader<T> extends QuerydslPagingItemReader<T> {
     private QuerydslNoOffsetOptions<T> options;
     private Function<JPAQueryFactory, JPAQuery<T>> idSelectQuery;
-
-    private QuerydslNoOffsetPagingItemReader() {
-        super();
-        setName(ClassUtils.getShortName(QuerydslNoOffsetPagingItemReader.class));
-    }
 
     public QuerydslNoOffsetPagingItemReader(EntityManagerFactory entityManagerFactory,
                                             int pageSize,
