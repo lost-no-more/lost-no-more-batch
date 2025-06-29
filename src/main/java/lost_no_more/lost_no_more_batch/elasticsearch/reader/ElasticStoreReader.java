@@ -1,11 +1,11 @@
-package lost_no_more.lost_no_more_batch.elastic_item.reader;
+package lost_no_more.lost_no_more_batch.elasticsearch.reader;
 
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Projections;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
-import lost_no_more.lost_no_more_batch.elastic_item.dto.ElasticLostItemDto;
-import lost_no_more.lost_no_more_batch.elastic_item.parameters.ElasticStoreJobParameters;
+import lost_no_more.lost_no_more_batch.elasticsearch.dto.ElasticLostItemDto;
+import lost_no_more.lost_no_more_batch.elasticsearch.parameters.ElasticStoreJobParameters;
 import lost_no_more.lost_no_more_batch.global.reader.QuerydslNoOffsetPagingItemReader;
 import lost_no_more.lost_no_more_batch.global.reader.QuerydslNoOffsetPagingItemReaderBuilder;
 import lost_no_more.lost_no_more_batch.global.reader.expression.Expression;

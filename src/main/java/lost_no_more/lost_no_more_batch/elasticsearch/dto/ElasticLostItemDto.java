@@ -1,4 +1,4 @@
-package lost_no_more.lost_no_more_batch.elastic_item.dto;
+package lost_no_more.lost_no_more_batch.elasticsearch.dto;
 
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;

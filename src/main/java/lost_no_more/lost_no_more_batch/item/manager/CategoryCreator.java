@@ -23,7 +23,7 @@ public class CategoryCreator {
 			return;
 		}
 
-		String sql = "INSERT INTO category (category_name) VALUES (?)";
+		String sql = "INSERT INTO category (name) VALUES (?)";
 		List<Object[]> batchArgs = new ArrayList<>();
 
 		for (String categoryName : categoryNames) {
