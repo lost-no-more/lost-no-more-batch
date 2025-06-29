@@ -61,7 +61,6 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-// JAR 파일명 커스터마이징
 jar {
 	archiveBaseName = 'lost-no-more-batch'
 	archiveVersion = ''
