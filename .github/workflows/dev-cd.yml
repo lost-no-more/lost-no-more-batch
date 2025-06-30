@@ -76,8 +76,6 @@ jobs:
             sudo docker compose -f docker-compose.dev.yml stop jenkins
             sudo docker compose -f docker-compose.dev.yml up -d jenkins
 
-            # Elasticsearch는 그대로 유지되므로 재시작하지 않음
-
             # 서비스 상태 확인
             echo "Checking service status..."
             sleep 10
