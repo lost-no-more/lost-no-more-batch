@@ -57,15 +57,19 @@ jobs:
         shell: bash
 
       - name: Upload JAR to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.DEV_EC2_IP }}
-          username: ${{ secrets.DEV_EC2_USER }}
-          key: ${{ secrets.DEV_EC2_KEY }}
-          source: ${{ secrets.EC2_JAR_SOURCE }}
-          target: ${{ secrets.EC2_JAR_TARGET }}
-          timeout: 300s
-          overwrite: true
+        run: |
+          # SSH 키 파일 생성
+          echo "${{ secrets.DEV_EC2_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+          
+          # SCP로 JAR 파일 직접 복사
+          scp -i private_key.pem -o StrictHostKeyChecking=no \
+            ${{ secrets.EC2_JAR_SOURCE }} \
+            ${{ secrets.DEV_EC2_USER }}@${{ secrets.DEV_EC2_IP }}:${{ secrets.EC2_JAR_TARGET }}
+          
+          # 임시 키 파일 삭제
+          rm private_key.pem
+        shell: bash
 
       - name: Verify Upload
         uses: appleboy/ssh-action@v1.0.3
@@ -91,12 +95,12 @@ jobs:
 
     steps:
       - name: Deploy to Development Server
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.0.3  # 안정적인 버전 사용
         with:
           host: ${{ secrets.DEV_EC2_IP }}
           username: ${{ secrets.DEV_EC2_USER }}
           key: ${{ secrets.DEV_EC2_KEY }}
-          timeout: 300s
+          timeout: 300s  # 타임아웃 설정
           script: |
             # JAR 파일 존재 확인
             if [ ! -f "${{ secrets.EC2_JAR_TARGET }}" ]; then
