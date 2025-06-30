@@ -4,13 +4,6 @@ on:
   push:
     branches: [ "develop" ]
 
-env:
-  JAR_NAME: lost-no-more-batch.jar
-  JAR_SOURCE: ${{ secrets.EC2_JAR_SOURCE }}
-  JAR_TARGET: ${{ secrets.EC2_JAR_TARGET }}
-  JENKINS_TARGET: ${{ secrets.JENKINS_JAR_TARGET }}
-  COMPOSE_PATH: /home/ubuntu/compose
-
 jobs:
   ci:
     runs-on: ubuntu-22.04
@@ -52,10 +45,10 @@ jobs:
 
       - name: Verify JAR file
         run: |
-          if [ -f "${{ env.JAR_SOURCE }}" ]; then
+          if [ -f "${{ secrets.EC2_JAR_SOURCE }}" ]; then
             echo "JAR file created successfully"
             ls -la ./build/libs/
-            echo "File size: $(stat -c%s ${{ env.JAR_SOURCE }}) bytes"
+            echo "File size: $(stat -c%s ${{ secrets.EC2_JAR_SOURCE }}) bytes"
           else
             echo "JAR file not found!"
             ls -la ./build/libs/ || echo "build/libs directory not found"
@@ -69,34 +62,10 @@ jobs:
           host: ${{ secrets.DEV_EC2_IP }}
           username: ${{ secrets.DEV_EC2_USER }}
           key: ${{ secrets.DEV_EC2_KEY }}
-          source: ${{ env.JAR_SOURCE }}
-          target: "/home/ubuntu/"
+          source: ${{ secrets.EC2_JAR_SOURCE }}
+          target: ${{ secrets.EC2_JAR_TARGET }}
           timeout: 300s
           overwrite: true
-
-      - name: Verify Upload
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.DEV_EC2_IP }}
-          username: ${{ secrets.DEV_EC2_USER }}
-          key: ${{ secrets.DEV_EC2_KEY }}
-          script: |
-            # appleboy/scp-action이 생성하는 디렉토리 구조에서 JAR 파일 확인
-            UPLOADED_FILE="/home/ubuntu/build/libs/${{ env.JAR_NAME }}"
-            
-            if [ -f "$UPLOADED_FILE" ]; then
-              echo "JAR file uploaded successfully"
-              ls -la $UPLOADED_FILE
-              file $UPLOADED_FILE
-              echo "File size: $(stat -c%s $UPLOADED_FILE) bytes"
-            else
-              echo "JAR file upload failed!"
-              echo "Checking directory structure:"
-              find /home/ubuntu -name "*.jar" -type f 2>/dev/null || echo "No JAR files found"
-              ls -la /home/ubuntu/
-              exit 1
-            fi
-
   cd:
     needs: ci
     runs-on: ubuntu-22.04
@@ -110,35 +79,42 @@ jobs:
           key: ${{ secrets.DEV_EC2_KEY }}
           timeout: 300s
           script: |
-            # 업로드된 JAR 파일 경로 (appleboy/scp-action이 생성한 디렉토리 구조)
-            SOURCE_JAR="/home/ubuntu/build/libs/${{ env.JAR_NAME }}"
+            # 업로드된 JAR 파일 경로 (Secrets에서 가져온 target 경로 사용)
+            SOURCE_JAR="${{ secrets.EC2_JAR_TARGET }}"
             
             # JAR 파일 존재 확인
             if [ ! -f "$SOURCE_JAR" ]; then
               echo "JAR file not found at: $SOURCE_JAR"
-              echo "Searching for JAR files:"
-              find /home/ubuntu -name "*.jar" -type f 2>/dev/null || echo "No JAR files found"
-              ls -la /home/ubuntu/
-              exit 1
+              echo "Checking appleboy/scp-action generated path..."
+              FALLBACK_JAR="/home/ubuntu/build/libs/lost-no-more-batch.jar"
+              if [ -f "$FALLBACK_JAR" ]; then
+                echo "Found JAR at fallback location: $FALLBACK_JAR"
+                SOURCE_JAR="$FALLBACK_JAR"
+              else
+                echo "Searching for JAR files:"
+                find /home/ubuntu -name "*.jar" -type f 2>/dev/null || echo "No JAR files found"
+                ls -la /home/ubuntu/
+                exit 1
+              fi
             fi
             
             echo "Deploying JAR file to Jenkins container..."
             echo "Source: $SOURCE_JAR"
             
             # 기존 JAR 파일 정리
-            sudo docker exec jenkins rm -rf /var/jenkins_home/${{ env.JAR_NAME }} 2>/dev/null || true
+            sudo docker exec jenkins rm -rf /var/jenkins_home/lost-no-more-batch.jar 2>/dev/null || true
             
-            # 새로운 JAR 파일을 Jenkins 컨테이너로 복사
-            sudo docker cp $SOURCE_JAR jenkins:/var/jenkins_home/${{ env.JAR_NAME }}
+            # 새로운 JAR 파일을 Jenkins 컨테이너로 복사 (Secrets 사용)
+            sudo docker cp $SOURCE_JAR ${{ secrets.JENKINS_JAR_TARGET }}
             
             # 복사 확인
-            sudo docker exec jenkins ls -la /var/jenkins_home/${{ env.JAR_NAME }}
-            sudo docker exec jenkins file /var/jenkins_home/${{ env.JAR_NAME }}
+            sudo docker exec jenkins ls -la /var/jenkins_home/lost-no-more-batch.jar
+            sudo docker exec jenkins file /var/jenkins_home/lost-no-more-batch.jar
             
             echo "JAR file deployed successfully to Jenkins container"
             
             # Docker Compose 서비스 재시작
-            cd ${{ env.COMPOSE_PATH }}
+            cd /home/ubuntu/compose
             
             echo "Restarting services..."
             sudo docker compose down 2>/dev/null || echo "No services to stop"
