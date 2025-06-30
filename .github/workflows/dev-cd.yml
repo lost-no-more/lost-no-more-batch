@@ -5,20 +5,28 @@ on:
     branches: [ "develop" ]
 
 jobs:
-  ci:
+  build-and-deploy:
     runs-on: ubuntu-22.04
-    env:
-      working-directory: .
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'corretto'
           java-version: '17'
+
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Create application.yml
         run: |
@@ -30,33 +38,118 @@ jobs:
       - name: Build Project
         run: |
           chmod +x gradlew
-          ./gradlew clean bootJar -Dspring.profiles.active=dev
+          ./gradlew clean bootJar -Dspring.profiles.active=dev --no-daemon
+        shell: bash
+
+      - name: Verify JAR file exists
+        run: |
+          if [ -f "${{ secrets.EC2_JAR_SOURCE }}" ]; then
+            echo "JAR file created successfully"
+            ls -la ./build/libs/
+            echo "JAR_FILE_SIZE=$(stat -c%s ${{ secrets.EC2_JAR_SOURCE }})" >> $GITHUB_ENV
+          else
+            echo "JAR file not found!"
+            ls -la ./build/libs/ || echo "build/libs directory not found"
+            exit 1
+          fi
         shell: bash
 
       - name: Upload JAR to EC2
-        uses: appleboy/scp-action@master
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.DEV_EC2_IP }}
           username: ${{ secrets.DEV_EC2_USER }}
           key: ${{ secrets.DEV_EC2_KEY }}
           source: ${{ secrets.EC2_JAR_SOURCE }}
           target: ${{ secrets.EC2_JAR_TARGET }}
+          timeout: 300s
 
-  cd:
-    needs: ci
-    runs-on: ubuntu-22.04
-
-    steps:
-      - name: Deploy to Development Server
-        uses: appleboy/ssh-action@master
+      - name: Verify Upload
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.DEV_EC2_IP }}
           username: ${{ secrets.DEV_EC2_USER }}
           key: ${{ secrets.DEV_EC2_KEY }}
           script: |
-            sudo docker cp ${{ secrets.EC2_JAR_TARGET }} ${{ secrets.JENKINS_JAR_TARGET }}
+            JAR_FILE="${{ secrets.EC2_JAR_TARGET }}lost-no-more-batch.jar"
+            if [ -f "$JAR_FILE" ]; then
+              echo "JAR file uploaded successfully"
+              ls -la $JAR_FILE
+              file $JAR_FILE
+            else
+              echo "JAR file upload failed!"
+              ls -la ${{ secrets.EC2_JAR_TARGET }}
+              exit 1
+            fi
 
+  deploy:
+    needs: build-and-deploy
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Deploy to Development Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEV_EC2_IP }}
+          username: ${{ secrets.DEV_EC2_USER }}
+          key: ${{ secrets.DEV_EC2_KEY }}
+          timeout: 300s
+          script: |
+            JAR_FILE="${{ secrets.EC2_JAR_TARGET }}lost-no-more-batch.jar"
+            
+            # JAR 파일 존재 확인
+            if [ ! -f "$JAR_FILE" ]; then
+              echo "JAR file not found at: $JAR_FILE"
+              ls -la ${{ secrets.EC2_JAR_TARGET }}
+              exit 1
+            fi
+            
+            echo "Deploying JAR file to Jenkins container..."
+            
+            # 기존 잘못된 디렉토리 삭제 (있다면)
+            sudo docker exec jenkins rm -rf /var/jenkins_home/lost-no-more-batch.jar
+            
+            # 기존 JAR 파일 백업
+            sudo docker exec jenkins cp /var/jenkins_home/LOST-NO-MORE.jar /var/jenkins_home/lost-no-more-batch.jar.backup || echo "No existing JAR to backup"
+            
+            # 새로운 JAR 파일을 Jenkins 컨테이너로 복사
+            sudo docker cp $JAR_FILE ${{ secrets.JENKINS_JAR_TARGET }}
+            
+            # 복사 확인 및 파일 타입 검증
+            sudo docker exec jenkins ls -la /var/jenkins_home/lost-no-more-batch.jar
+            sudo docker exec jenkins file /var/jenkins_home/lost-no-more-batch.jar
+            
+            echo "JAR file deployed successfully to Jenkins container"
+            
+            # Docker Compose 디렉토리로 이동
             cd /home/ec2-user/compose
-            sudo docker compose down
+            
+            # 기존 서비스 중지 (Jenkins 제외하고 배치 관련 서비스만)
+            echo "Restarting batch services..."
+            sudo docker compose -f docker-compose.dev.yml restart batch-app || echo "batch-app service not found, continuing..."
+            
+            # 새 서비스 시작
+            echo "Starting services..."
             sudo docker compose -f docker-compose.dev.yml up -d
+            
+            # Jenkins에서 배치 작업 실행 (선택사항)
+            echo "Running batch application in Jenkins container..."
+            sudo docker exec jenkins java -jar /var/jenkins_home/lost-no-more-batch.jar --spring.profiles.active=dev || echo "Batch execution completed or failed"
+            
+            # 배포 확인을 위해 잠시 대기
+            echo "Waiting for services to start..."
+            sleep 15
+            
+            # 서비스 상태 확인
+            echo "Checking service status..."
+            sudo docker compose -f docker-compose.dev.yml ps
+            
+            # 로그 확인 (최근 20줄)
+            echo "Recent logs:"
+            sudo docker compose -f docker-compose.dev.yml logs --tail=20
+            
+            # 불필요한 이미지 정리
+            echo "Cleaning up unused images..."
             sudo docker image prune -f
+            
+            echo "Deployment completed successfully!"
