@@ -67,22 +67,24 @@ jobs:
           timeout: 300s
           script: |
             sudo docker exec jenkins rm -rf /var/jenkins_home/lost-no-more-batch.jar 2>/dev/null || true
-            
+
             sudo docker cp ${{ secrets.LOST_NO_MORE_BATCH_JAR }} jenkins:/var/jenkins_home/lost-no-more-batch.jar
-            
+
             cd /home/ubuntu/compose
-            
-            echo "Restarting services..."
-            sudo docker compose down 2>/dev/null || echo "No services to stop"
-            sudo docker compose -f docker-compose.dev.yml up -d
-            
+
+            echo "Restarting only Jenkins service..."
+            sudo docker compose -f docker-compose.dev.yml stop jenkins
+            sudo docker compose -f docker-compose.dev.yml up -d jenkins
+
+            # Elasticsearch는 그대로 유지되므로 재시작하지 않음
+
             # 서비스 상태 확인
             echo "Checking service status..."
             sleep 10
             sudo docker compose -f docker-compose.dev.yml ps
-            
+
             # 불필요한 이미지 정리
             echo "Cleaning up unused images..."
             sudo docker image prune -f
-            
+
             echo "Deployment completed successfully!"
