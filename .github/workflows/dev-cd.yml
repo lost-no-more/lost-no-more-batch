@@ -79,41 +79,10 @@ jobs:
           key: ${{ secrets.DEV_EC2_KEY }}
           timeout: 300s
           script: |
-            # 업로드된 JAR 파일 경로 (Secrets에서 가져온 target 경로 사용)
-            SOURCE_JAR="${{ secrets.EC2_JAR_TARGET }}"
-            
-            # JAR 파일 존재 확인
-            if [ ! -f "$SOURCE_JAR" ]; then
-              echo "JAR file not found at: $SOURCE_JAR"
-              echo "Checking appleboy/scp-action generated path..."
-              FALLBACK_JAR="/home/ubuntu/build/libs/lost-no-more-batch.jar"
-              if [ -f "$FALLBACK_JAR" ]; then
-                echo "Found JAR at fallback location: $FALLBACK_JAR"
-                SOURCE_JAR="$FALLBACK_JAR"
-              else
-                echo "Searching for JAR files:"
-                find /home/ubuntu -name "*.jar" -type f 2>/dev/null || echo "No JAR files found"
-                ls -la /home/ubuntu/
-                exit 1
-              fi
-            fi
-            
-            echo "Deploying JAR file to Jenkins container..."
-            echo "Source: $SOURCE_JAR"
-            
-            # 기존 JAR 파일 정리
             sudo docker exec jenkins rm -rf /var/jenkins_home/lost-no-more-batch.jar 2>/dev/null || true
             
-            # 새로운 JAR 파일을 Jenkins 컨테이너로 복사 (Secrets 사용)
-            sudo docker cp $SOURCE_JAR ${{ secrets.JENKINS_JAR_TARGET }}
+            sudo docker cp ${{ secrets.LOST_NO_MORE_BATCH_JAR }} jenkins:/var/jenkins_home/lost-no-more-batch.jar
             
-            # 복사 확인
-            sudo docker exec jenkins ls -la /var/jenkins_home/lost-no-more-batch.jar
-            sudo docker exec jenkins file /var/jenkins_home/lost-no-more-batch.jar
-            
-            echo "JAR file deployed successfully to Jenkins container"
-            
-            # Docker Compose 서비스 재시작
             cd /home/ubuntu/compose
             
             echo "Restarting services..."
