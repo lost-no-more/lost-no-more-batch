@@ -25,15 +25,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'corretto'
           java-version: '17'
 
       - name: Cache Gradle dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
-          path: ~/.gradle/caches
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: |
             ${{ runner.os }}-gradle-
@@ -60,10 +62,10 @@ jobs:
         run: curl -s http://localhost:9200/_cluster/health?pretty
         shell: bash
 
-      - name: Build
+      - name: Build and Test
         run: |
           chmod +x gradlew
-          ./gradlew build
+          ./gradlew build --no-daemon  # --no-daemon 추가
         shell: bash
 
       - name: Publish Test Results
