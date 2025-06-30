@@ -43,19 +43,6 @@ jobs:
           ./gradlew clean bootJar -Dspring.profiles.active=dev --no-daemon
         shell: bash
 
-      - name: Verify JAR file
-        run: |
-          if [ -f "${{ secrets.EC2_JAR_SOURCE }}" ]; then
-            echo "JAR file created successfully"
-            ls -la ./build/libs/
-            echo "File size: $(stat -c%s ${{ secrets.EC2_JAR_SOURCE }}) bytes"
-          else
-            echo "JAR file not found!"
-            ls -la ./build/libs/ || echo "build/libs directory not found"
-            exit 1
-          fi
-        shell: bash
-
       - name: Upload JAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
