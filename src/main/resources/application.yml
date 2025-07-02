@@ -20,6 +20,9 @@ spring:
     jdbc:
       initialize-schema: never
 
+server:
+  timezone: Asia/Seoul
+
 logging:
   level:
     org.springframework.data.elasticsearch.client: DEBUG
