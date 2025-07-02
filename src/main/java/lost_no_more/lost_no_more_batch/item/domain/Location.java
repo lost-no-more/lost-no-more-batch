@@ -16,7 +16,7 @@ import lost_no_more.lost_no_more_batch.global.domain.BaseEntity;
 @Getter
 @Table(name = "location",
     indexes = {
-        @Index(name = "idx_name", columnList = "name", unique = true)
+        @Index(name = "idx_location_name", columnList = "name", unique = true)
     })
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
