@@ -12,7 +12,8 @@ spring:
         show_sql: true
         jdbc:
           time_zone: Asia/Seoul
-
+  jackson:
+    time-zone: Asia/Seoul
   batch:
     job:
       fail-on-job-failure: true
