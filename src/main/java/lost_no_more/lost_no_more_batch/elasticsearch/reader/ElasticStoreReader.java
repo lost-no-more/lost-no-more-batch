@@ -58,7 +58,7 @@ public class ElasticStoreReader {
                 lostItem.date,
                 lostItem.name,
                 category.id,
-                location.name,
+                location.region,
                 location.latitude,
                 location.longitude
         );
